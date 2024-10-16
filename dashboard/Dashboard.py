@@ -4,14 +4,37 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime, timedelta
 import zipfile
+import os
 
 @st.cache_data
 def load_data():
-    with zipfile.ZipFile('final_airquality.zip', 'r') as zip_ref:
-        zip_ref.extractall('data')
-    df = pd.read_csv('data/final_airquality.csv')
-    df['DateTime'] = pd.to_datetime(df['DateTime'])
-    return df
+    # Get the directory of the current script
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Construct the full path to the zip file
+    zip_path = os.path.join(current_dir, 'final_airquality.zip')
+    
+    # Check if the file exists
+    if not os.path.exists(zip_path):
+        st.error(f"Error: The file {zip_path} does not exist.")
+        return None
+
+    try:
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            # Extract to a 'data' folder in the current directory
+            extract_path = os.path.join(current_dir, 'data')
+            zip_ref.extractall(extract_path)
+        
+        # Construct the full path to the CSV file
+        csv_path = os.path.join(extract_path, 'final_airquality.csv')
+        
+        # Read the CSV file
+        df = pd.read_csv(csv_path)
+        df['DateTime'] = pd.to_datetime(df['DateTime'])
+        return df
+    except Exception as e:
+        st.error(f"An error occurred while loading the data: {str(e)}")
+        return None
 
 df = load_data()
 
