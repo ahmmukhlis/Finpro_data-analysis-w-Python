@@ -14,8 +14,6 @@ def load_data():
     df['DateTime'] = pd.to_datetime(df['DateTime'])
     return df
 
-df = load_data()
-
 sns.set_style('dark') 
 sns.set_palette('dark')  
 
