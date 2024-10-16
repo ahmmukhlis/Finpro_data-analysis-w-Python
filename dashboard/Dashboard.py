@@ -8,27 +8,17 @@ import os
 
 @st.cache_data
 def load_data():
-    # Get the directory of the current script
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # Construct the full path to the zip file
+
     zip_path = os.path.join(current_dir, 'final_airquality.zip')
-    
-    # Check if the file exists
-    if not os.path.exists(zip_path):
-        st.error(f"Error: The file {zip_path} does not exist.")
-        return None
 
     try:
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            # Extract to a 'data' folder in the current directory
             extract_path = os.path.join(current_dir, 'data')
             zip_ref.extractall(extract_path)
         
-        # Construct the full path to the CSV file
         csv_path = os.path.join(extract_path, 'final_airquality.csv')
         
-        # Read the CSV file
         df = pd.read_csv(csv_path)
         df['DateTime'] = pd.to_datetime(df['DateTime'])
         return df
@@ -91,7 +81,7 @@ if not selected_data.empty:
         pollutants,
         'DateTime',
         '_interpolated',
-        'Hourly Pollutant Levels'
+        'Tingkat Polutan /jam'
     )
     
     st.pyplot(fig_hourly)
@@ -112,7 +102,7 @@ if not selected_data.empty:
         pollutants,
         'DateTime',
         '_day_avg',
-        'Daily Average Pollutant Levels'
+        'Tingkat Rerata Harian'
     )
     st.pyplot(fig_daily)
 
