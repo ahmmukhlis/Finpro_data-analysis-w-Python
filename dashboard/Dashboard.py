@@ -7,12 +7,13 @@ import zipfile
 
 @st.cache_data
 def load_data():
-    # Load the CSV file from the zip archive
     with zipfile.ZipFile('final_airquality.zip', 'r') as zip_ref:
-        with zip_ref.open('final_airquality.csv') as file:
-            df = pd.read_csv(file)
+        zip_ref.extractall('data')
+    df = pd.read_csv('data/final_airquality.csv')
     df['DateTime'] = pd.to_datetime(df['DateTime'])
     return df
+
+df = load_data()
 
 sns.set_style('dark') 
 sns.set_palette('dark')  
