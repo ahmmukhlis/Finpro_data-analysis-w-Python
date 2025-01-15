@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import zipfile
 import os
 
-#Import data
+# Import data
 @st.cache_data
 def load_data():
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -27,7 +27,7 @@ def load_data():
         st.error(f"An error occurred while loading the data: {str(e)}")
         return None
     
-#Preprocess DateTime
+# Preprocess DateTime
 @st.cache_data
 def preprocess_data(df):
     df['Date'] = df['DateTime'].dt.date
@@ -37,7 +37,7 @@ def filter_data(df, start_date, end_date, stations):
     mask = (df['Date'] >= start_date) & (df['Date'] <= end_date) & (df['station'].isin(stations))
     return df.loc[mask]
 
-#Mendefinisikan rerata polutan
+# Polutants average
 @st.cache_data
 def calculate_daily_avg(df):
     return df.groupby(['Date', 'station']).agg({
@@ -49,12 +49,12 @@ def calculate_daily_avg(df):
         'O3_interpolated': 'mean',
     }).reset_index()
 
-# Tampilan warna Station
+# Station colors
 def get_station_colors(stations):
     color_map = plt.cm.get_cmap('tab10')
     return {station: to_rgba(color_map(i)) for i, station in enumerate(stations)}
 
-#Batas polutan
+# Polutants threshold
 @st.cache_data
 def calculate_good_air_quality(df, station, pollutant_limits):
     station_data = df[df['station'] == station]
@@ -83,15 +83,16 @@ stations = st.sidebar.multiselect('Select Stations', df['station'].unique())
 # Filter data
 selected_data = filter_data(df, start_date, end_date, stations)
 
-# Tampilan warna station 
+# Station colors 
 station_color_dict = get_station_colors(stations)
 
 if not selected_data.empty:
-    st.title('Dashboard Kualitas Udara')
-    st.header(f'Kualitas udara stations: {", ".join(stations)}, rentang waktu: {start_date} hingga {end_date}')
+    st.title('Air Quality Dashboard')
+    st.header(f'Air Quality of: {", ".join(stations)}, 
+    : {start_date} - {end_date}')
 
-    # Section 1: Rerata Polutan Jam
-    st.subheader('1. Rerata Polutan /jam ')
+    # Section 1: Hourly average Polutants
+    st.subheader('1. Polutants Average /hour ')
     pollutants = ['PM2.5', 'PM10', 'SO2', 'NO2', 'CO', 'O3']
 
     tabs = st.tabs(pollutants)
@@ -108,8 +109,8 @@ if not selected_data.empty:
             ax.legend()
             st.pyplot(fig)
 
-    # Section 2: Rerata Polutan Harian
-    st.subheader('2. Rerata Polutan /hari')
+    # Section 2: Daily average polutants  
+    st.subheader('2. Polutants Average /day')
     daily_avg = calculate_daily_avg(selected_data)
 
     tabs = st.tabs(pollutants)
@@ -129,10 +130,10 @@ if not selected_data.empty:
                       
             st.pyplot(fig)
 
-    # Section 3: Rekapitulasi kualitas udara
-    st.subheader('3. Rekapitulasi Kualitas Udara')
+    # Section 3: Air quality recap
+    st.subheader('3. Air Quality Recap')
 
-    # Limit polutan
+    # Polutants limit
     pollutant_limits = {
         'PM2.5': {'1h': 75, '24h': 45},
         'PM10': {'24h': 150, 'year': 70},
@@ -145,12 +146,12 @@ if not selected_data.empty:
     for station in stations:
         total_hours, good_hours = calculate_good_air_quality(selected_data, station, pollutant_limits)
         st.write(f"Station: {station}")
-        st.write(f"Total kualitas udara sehat: {good_hours} dari {total_hours} jam")
-        st.write(f"Persentase kualitas udara sehat: {(good_hours / total_hours) * 100:.2f}%")
+        st.write(f"Healthy air quality total: {good_hours} dari {total_hours} jam")
+        st.write(f"Healthy air quality percentage: {(good_hours / total_hours) * 100:.2f}%")
         st.write("---")
 
     # Section 4: Parameter Eksternal
-    st.subheader('4. Parameter Eksternal')
+    st.subheader('4. External Parameters')
     parameters = ['TEMP', 'PRES', 'DEWP', 'RAIN', 'WSPM']
 
     for param in parameters:
@@ -165,14 +166,14 @@ if not selected_data.empty:
         )
 
     # Section 5: Crossplot Pollutants vs Parameters
-    st.subheader('5. Crossplot Polutan vs Parameter Eksternal')
+    st.subheader('5. Polutants vs External Parameters')
     
     pollutant_options = ['PM2.5_day_avg', 'PM10_day_avg', 'SO2_day_avg', 'NO2_day_avg', 'CO_day_avg', 'O3_8hour_avg']
     parameter_options = ['TEMP_day_avg', 'PRES_day_avg', 'DEWP_day_avg', 'RAIN_day_avg', 'WSPM_day_avg']
 
-    pollutant_x = st.selectbox('Sumbu X', pollutant_options)
-    pollutant_y = st.selectbox('Sumbu Y', pollutant_options)
-    color_parameter = st.selectbox('Kontrol Warna', parameter_options)
+    pollutant_x = st.selectbox('X-axis', pollutant_options)
+    pollutant_y = st.selectbox('Y-axis', pollutant_options)
+    color_parameter = st.selectbox('Colorkey', parameter_options)
 
     fig, ax = plt.subplots(figsize=(10, 8))
     scatter = ax.scatter(selected_data[pollutant_x], selected_data[pollutant_y], 
@@ -186,4 +187,4 @@ if not selected_data.empty:
     st.pyplot(fig)
 
 else:
-    st.warning('Tidak ada data untuk ditampilkan.')
+    st.warning('~No Data to Display~')
