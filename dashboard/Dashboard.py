@@ -88,8 +88,7 @@ station_color_dict = get_station_colors(stations)
 
 if not selected_data.empty:
     st.title('Air Quality Dashboard')
-    st.header(f'Air Quality of: {", ".join(stations)}, 
-    : {start_date} - {end_date}')
+    st.header(f'Air Quality of: {", ".join(stations)}, : {start_date} - {end_date}')
 
     # Section 1: Hourly average Polutants
     st.subheader('1. Polutants Average /hour ')
